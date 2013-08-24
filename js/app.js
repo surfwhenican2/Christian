@@ -65,7 +65,8 @@ $(document).ready(function() {
 	  	  var username = $("#signupusername").val();
 		  var pass = $("#signuppassword").val();
 		  var fullName = $('#signupfullname').val();
-			Parse.User.signUp(username, pass, {"email": username, "fullName":fullName, "personalBio":"You have not submitted a bio yet.", "profilePhotoUrl":"./surf.jpg","currentCity":"Add your current city.", "affiliations":"You aren't affiliated with any organizations yet."}, {
+		  var age = $('#signupAge').val();
+			Parse.User.signUp(username, pass, {"age":age, "email": username, "fullName":fullName, "personalBio":"You have not submitted a bio yet.", "profilePhotoUrl":"./surf.jpg","currentCity":"Add your current city.", "affiliations":"You aren't affiliated with any organizations yet."}, {
 			  success: function(user) {
 			  	Parse.Cloud.run("sendSignUpEmail", {"email": username, "fullName":fullName} , {
 			  		success: function (){
@@ -87,7 +88,7 @@ $(document).ready(function() {
 			  	$("#signUpAlert").append('<div class="alert alert-danger"><button type="button" class="close" data-dismiss="alert">×</button>'+error.message+'</div>');
 			  }
 			});
-		//$('#signInModal').modal('hide');
+		$('#signInModal').modal('hide');
 	  
     },
     latestProjects: function (){
@@ -129,14 +130,17 @@ $(document).ready(function() {
   		'click #changePasswordSubmit':'verifyPassword',
   		'click #currentLocation':'addLocation',
   		'click #profilePageImage':'showPhotoUploadModal',
-  		'click #submitPhotoButton':"uploadProfilePhoto"
+  		'click #submitPhotoButton':'uploadProfilePhoto',
+  		'click #addAffiliationsButton':'addAffiliations',
+  		'click #affiliationSpans':'removeAffiliation'
   	},
 
   	template: _.template($('#profile-template').html()),
 
   	initialize: function () {
-  		_.bindAll(this, 'render', 'addBio', 'changePassword', 'submitBio', 'submitLoc', 'verifyPassword');
+  		_.bindAll(this, 'render', 'addBio', 'changePassword', 'submitBio', 'submitLoc', 'verifyPassword','addAffiliations','uploadProfilePhoto');
   		var user = Parse.User.current();
+  		console.log(user);
   		if (user){
   			this.model = user;
   			this.render();
@@ -146,21 +150,19 @@ $(document).ready(function() {
   	},
   	render: function () {
 		$(this.el).html(this.template(this.model.toJSON()));
-		//if (this.model.get("currentCity")) $('#currentCity').append(this.model.get("currentCity"));
-		if (this.model.get("affiliations")) $('#affiliations').append(this.model.get("affiliations"));
-		console.log(this.model.toJSON());
+		$.each(this.model.get("affiliations"), function(key, value){
+			$('#affiliations').append('<button type="button" itemid="'+value+'" class="btn btn-primary btn-sm">'+value+'</button><span id="affiliationSpans" itemid="'+value+'"class="glyphicon glyphicon-remove"></span>');
+		})
 		return this;
   	},
   	changePassword: function () {
   		$('#changePasswordModal').modal('show');
-
   	},
   	verifyPassword: function (){
   		console.log("verify password");
   	},
   	addBio: function (){
   		$('#bioInputItems').show();
-
   	},
   	submitBio: function (){
   		var bio = $('#bioText').val();
@@ -219,6 +221,21 @@ $(document).ready(function() {
 			  	alert("Error: "+error.message);
 			});
 		}
+	},
+	addAffiliations: function(){
+		var org = $('#additionalAffiliations').val();
+		console.log(org);
+		var user = Parse.User.current();
+		user.addUnique("affiliations", org);
+		user.save();
+		$('#affiliations').append('<button type="button" class="btn btn-primary btn-sm">'+org+'</button><span id="affiliationSpans" itemid="'+org+'"class="glyphicon glyphicon-remove"></span>');
+	},
+	removeAffiliation: function(ev){
+		var aff = $(ev.currentTarget).attr('itemid');
+		$(ev.currentTarget).remove();
+		$('button').filter(":contains('"+aff+"')").remove();
+		this.model.remove("affiliations", aff);
+		this.model.save();
 	}
   });
 
@@ -231,6 +248,7 @@ var Item = Parse.Object.extend("Item", {
 		shortDescription: "NULL",
 		imageUrl: "img.jpg",
 		location: "NULL",
+		city: "NULL",
 		open: false
 	 }, 
 	 initialize: function() {
@@ -253,7 +271,6 @@ var Item = Parse.Object.extend("Item", {
   	getOpen: function (){
 	  	return this.where({open:true});
   	}
-  	
   });
 
   var ListItemView = Parse.View.extend({
@@ -263,11 +280,9 @@ var Item = Parse.Object.extend("Item", {
 	 template: _.template($('#item-template').html()),
 
 	 events: {
-	 	'click div': "detail"
 	 },
 	 
 	 initialize: function() {
-	 	console.log("Initializing ListItemView...");
 		 _.bindAll(this, 'render');
 		 this.model.on('change', this.render, this);
 	 },
@@ -275,8 +290,6 @@ var Item = Parse.Object.extend("Item", {
 		 var $el = $(this.el);
 		 $el.html(this.template(this.model.toJSON()));
 		 return this;
-	 },
-	 detail: function (e) {
 	 }
   });
 
@@ -419,8 +432,6 @@ var Item = Parse.Object.extend("Item", {
 				 console.log(error);
 			 }
 		 });
-		 console.log("change render");
-		 
 	 },
 	 addOne: function(item) {
      	var view = new ListItemView({model:item});
@@ -437,6 +448,74 @@ var Item = Parse.Object.extend("Item", {
      }
   });
 
+  var LocalItems = Parse.View.extend({
+
+  	el: $('#localCarousel'),
+
+  	initialize: function() {
+  		var self = this;
+		 _.bindAll(this, 'render');
+		 this.items = new ItemCollection;
+		 this.items.on('add', this.render, this);
+		 this.items.query = new Parse.Query(Item);
+		 this.items.query.equalTo("open", true);
+		 this.items.fetch({
+			 success: function(collection){
+			 	self.render();
+			 },
+			 error: function(error) {
+				 console.log(error);
+			 }
+		 });
+  	},
+  	render: function(){
+  		this.delegateEvents();
+  		var size = this.items.length;
+  		var i = 1;
+  		var j = 1;
+  		$('#localCarouselInner').append('<div class="item active"><div class="ui-grid-b" id="item'+(j-1)+'">');
+  		for (i; i < size; i++)
+		{
+			if ((i-1) % 3 == 0 ) {
+				var item = "#item"+(j-1);
+				$(item).append('<div class="ui-block-a" id="element'+(i-1)+'">');
+			} else if ((i-1) % 3 == 1 ) {
+				var item = "#item"+(j-1);
+				$(item).append('<div class="ui-block-b" id="element'+(i-1)+'">');
+			} else {
+				var item = "#item"+(j-1);
+				$(item).append('<div class="ui-block-c" id="element'+(i-1)+'">');
+			}
+			var view = new ListItemView({model:this.items.at(i-1)});
+			$('#element'+(i-1)).append(view.render().$el);
+			$(item).append('</div>');
+			if ( i % 3 == 0) {
+				j++;
+				$('#localCarouselInner').append('</div>');
+				$('#localCarouselInner').append('<div class="item"><div class="ui-grid-b" id="item'+(j-1).toString()+'">');
+			}
+		}
+		$('#localCarouselInner').append('</div>');
+		$('#localCarousel').carousel('pause');
+  		return this;
+  	}
+  })
+
+ var ListItemView = Parse.View.extend({
+
+ 	tagName: "div",
+
+	 template: _.template($('#item-template').html()),
+	 
+	 initialize: function() {
+		 _.bindAll(this, 'render');
+	 },
+	 render: function() {
+		 var $el = $(this.el);
+		 $el.html(this.template(this.model.toJSON()));
+		 return this;
+	 }
+  });
 
   var FeatItemView = Parse.View.extend({
   
@@ -455,47 +534,6 @@ var Item = Parse.Object.extend("Item", {
 	 }
   });
 
-
-
-  var FeaturedItemsView = Parse.View.extend({
-	 
-	 el: $('.upperSection'),
-
-	 initialize: function() {
-		 var self = this;
-		 _.bindAll(this, 'render', 'addOne', 'addAll');
-		 this.$el.html(_.template($("#featured-list-template").html()));
-		 this.items = new ItemCollection;
-		 this.items.on('add', this.render, this);
-		 this.items.query = new Parse.Query(Item);
-		 this.items.query.equalTo("open", true);
-		 this.items.query.limit(5);
-		 this.items.fetch({
-			 success: function(collection){
-			 	console.log(collection);
-			 	self.render();
-			 	$('.carousel').carousel();
-			 },
-			 error: function(error) {
-				 console.log(error);
-			 }
-		 });
-	 },
-	 addOne: function(item) {
-     	var view = new FeatItemView({model:item});
-     	this.$(".carousel-inner").append(view.render().$el);
-
-     },
-	 render: function() {
-	 	this.delegateEvents();
-	 	this.addAll();
-	 	return this;
-	 },
-     addAll: function(collection) {
-     	this.$(".carousel-inner").html("");
-     	this.items.each(this.addOne);
-     }
-  });
 
 var ChangePasswordView = Parse.View.extend({
 
@@ -552,8 +590,9 @@ var ChangePasswordView = Parse.View.extend({
 		  
 	  },
 	  home: function (){
-		new FeaturedItemsView({});
-    	new AllItemsView({});
+    	//new AllItemsView({});
+    	console.log("Home called.");
+    	new LocalItems({});
 		  
 	  },
 	  itemDetail: function(id){
