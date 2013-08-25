@@ -125,12 +125,14 @@
 		</div> <!-- Upper Section -->
 	    <div class="lowerSection" style="padding-top: 70px;"></div>
 	    <div class="localSection" style="padding-top: 50px;">
-	    	<h3 id="currentCityCarouselCity"></h3> 
+	    	<div id="localCarouselDiv">
+	    	<h3 id="currentCityCarouselCity">San Francisco</h3><a id="changeCity">Change City</a>
 			<div class="carousel slide" id="localCarousel">
 	        	<div class="carousel-inner" id="localCarouselInner">
 	        	</div>
 	            <a data-slide="prev" href="#localCarousel" class="left carousel-control">‹</a>
 	            <a data-slide="next" href="#localCarousel" class="right carousel-control">›</a>
+  			</div>
   			</div>
 	    </div>
 	    
@@ -270,9 +272,6 @@
 	 </script>
    
 	  <script type="text/template" id="create-new-item">
-	  	<header id="header"><p>This is a header and im testing to see if it spans the whole div.</p></header>
-	  	<div class="ui-grid-a">
-   			<div class="ui-block-a">
 			      	<h2>Create a new Item</h2>
 			      	<div class="accordion" id="accordion1">
 			      		<div class="accordion-group">
@@ -282,18 +281,18 @@
 						    <div id="collapseOne" class="accordion-body collapse in">
 						    	<div class="accordion-inner">
 							        <form class="form-horizontal" id="textForm">
-							        	<div class="form-group">
+							        	<div class="form-group" style="padding:10px 0px 10px 0px">
 								          	<div class="error" style="display:none"></div>
 								          	<input class="input-block-level" type="text" id="newitem-title" placeholder="Title" /><br>
 							        	</div>
-							          	<div class="form-group">
+							          	<div class="form-group" style="padding:10px 0px 10px 0px">
 								          	<input class="input-block-level" type="text" id="newitem-shortDescription" placeholder="Short Description"/>
-								          	<a href="" class="btn btn-xs btn-info" data-toggle="popover" title="" data-content="A short description is one sentence and gives a short summary of the project." data-original-title="Short Description">Info</a><br>
+								          	
 							          	</div>
-							          	<div class="form-group">
-							          		<textarea class="input-block-level" id="newitem-description" rows="8">Fill in this area with a detailed description of the project.</textarea><br>
+							          	<div class="form-group" style="padding:10px 0px 10px 0px">
+							          		<textarea class="input-block-level" id="newitem-description" rows="16">Fill in this area with a detailed description of the project.</textarea><br>
 							          	</div>
-							          	<div class="form-group">
+							          	<div class="form-group" style="padding:10px 0px 10px 0px">
 							          		<input class="input-block-level" type="text" id="newitem-sponsor" placeholder="Sponsors?" />
 							          	</div> 
 							         	<button class="btn btn-default" id="textFormSubmit">Submit</button><br>
@@ -317,12 +316,6 @@
 					    	</div>
 					  	</div>
 					</div>
-				</div>
-			    <div class="ui-block-b">
-					<center><p> Heres where I want to render the preview. <p></center>
-					<div id='renderedPreview'></div>
-				</div>
-		</div>
 	</script>
 
 	<script type="text/template" id="item-detail-view">
@@ -356,6 +349,8 @@
 <script src="js/bootstrap.min.js"></script>
 <script src="js/parse.min.js"></script>
 <script src="js/app.js"></script>
+<script src="http://js.nicedit.com/nicEdit-latest.js" type="text/javascript"></script>
+<script type="text/javascript">bkLib.onDomLoaded(nicEditors.allTextAreas);</script>
 
 
 
@@ -367,8 +362,8 @@
 		    	</a>
 		      	<div class="caption">
 		        	<h3 style="width:90%;text-align:center"><%= title %></h3>
-		        	<h4 style="width:90%;text-align:center"><%= objectId %></h4>
-					<p style="width:190px"><%= shortDescription %></p>
+		        	<h4 style="width:90%;text-align:center"><%= shortDescription %></h4>
+					<p style="width:190px"><%= description %></p>
 					<div class="progress">
 					<div class="bar" style="width: <%= percentFunded %>%;">
 					    <span class="sr-only"><%= percentFunded %>% Funded</span>

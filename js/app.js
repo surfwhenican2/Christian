@@ -343,19 +343,17 @@ var Item = Parse.Object.extend("Item", {
 	  events:{  
 	  	"click #textFormSubmit":"submitText",
 	  	"click #projectPhotoUploadButton":"submitMedia",
-	  	'click #newitem-title':'renderPreview',
 	  },
 	  
 	  el: $("#mainapp"),
 	  
 	  initialize: function() {
 		  var self = this;
-		  _.bindAll(this, 'render', 'submitText', 'submitMedia', 'renderPreview');
+		  _.bindAll(this, 'render', 'submitText', 'submitMedia');
 		  this.$el.html(_.template($('#create-new-item').html()));
 		  this.render();
 	  },
 	  render: function() {
-		  console.log("Render for CreateNewItem called.");
 		  this.delegateEvents();
 		  return this;
 	  },
@@ -377,6 +375,7 @@ var Item = Parse.Object.extend("Item", {
 			sponsor: sponsor1,
 			imgUrl: "img.jpg",
 			open: true,
+			user: Parse.User.current(),
 			ACL: access }, {
 				success: function(item) {
 					console.log("Success saving " + item.id);
@@ -404,10 +403,6 @@ var Item = Parse.Object.extend("Item", {
 		var user = Parse.User.current();
 		user.set("profilePhoto", parseFile);
 		profilePhoto.save();
-	  },
-	  renderPreview: function() {
-	  	console.log("Calling Render.");
-	  	$('#renderPreview').text("Testing");
 	  }
   });
 
@@ -450,7 +445,11 @@ var Item = Parse.Object.extend("Item", {
 
   var LocalItems = Parse.View.extend({
 
-  	el: $('#localCarousel'),
+  	el: $('#localCarouselDiv'),
+
+  	events:  {
+  		'click #changeCity':'changeCity'
+  	},
 
   	initialize: function() {
   		var self = this;
@@ -459,8 +458,12 @@ var Item = Parse.Object.extend("Item", {
 		 this.items.on('add', this.render, this);
 		 this.items.query = new Parse.Query(Item);
 		 this.items.query.equalTo("open", true);
+		 var city = $('#currentCityCarouselCity').text();
+		 console.log('city: '+city);
+		 this.items.query.equalTo("city", city);
 		 this.items.fetch({
 			 success: function(collection){
+
 			 	self.render();
 			 },
 			 error: function(error) {
@@ -470,11 +473,12 @@ var Item = Parse.Object.extend("Item", {
   	},
   	render: function(){
   		this.delegateEvents();
+  		console.log(this.items);
   		var size = this.items.length;
   		var i = 1;
   		var j = 1;
   		$('#localCarouselInner').append('<div class="item active"><div class="ui-grid-b" id="item'+(j-1)+'">');
-  		for (i; i < size; i++)
+  		for (i; i <= size; i++)
 		{
 			if ((i-1) % 3 == 0 ) {
 				var item = "#item"+(j-1);
@@ -498,6 +502,15 @@ var Item = Parse.Object.extend("Item", {
 		$('#localCarouselInner').append('</div>');
 		$('#localCarousel').carousel('pause');
   		return this;
+  	},
+  	changeCity: function(){
+  		$('#currentCityCarouselCity').html('<select id="dropdown_selector"><option value="" disabled="disabled" selected="selected">Select a City</option><option value="San Diego">San Diego</option><option value="San Francisco">San Francisco</option></select>')
+  		$('#dropdown_selector').change(function() {
+  			var option = $(':selected').text();
+  			$('#currentCityCarouselCity').html(option);
+  			$('#localCarouselInner').html('');
+  			new LocalItems({city:option});
+		});
   	}
   })
 
