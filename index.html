@@ -125,17 +125,16 @@
 		</div> <!-- Upper Section -->
 	    <div class="lowerSection" style="padding-top: 70px;"></div>
 	    <div class="localSection" style="padding-top: 50px;">
+	    	<h3><span class="glyphicon glyphicon-screenshot" style="float:left; vertical-align:text-bottom;"></span></h3><h3 id="currentCityCarouselCity" style="float:left;">San Diego</h3><h3><a id="changeCity">Change City</a></h3>
 	    	<div id="localCarouselDiv">
-	    	<h3 id="currentCityCarouselCity">San Francisco</h3><a id="changeCity">Change City</a>
-			<div class="carousel slide" id="localCarousel">
-	        	<div class="carousel-inner" id="localCarouselInner">
-	        	</div>
-	            <a data-slide="prev" href="#localCarousel" class="left carousel-control">‹</a>
-	            <a data-slide="next" href="#localCarousel" class="right carousel-control">›</a>
-  			</div>
+				<div class="carousel slide" id="localCarousel">
+	        		<div class="carousel-inner" id="localCarouselInner">
+	        		</div>
+	            	<a data-slide="prev" href="#localCarousel" class="left carousel-control">‹</a>
+	            	<a data-slide="next" href="#localCarousel" class="right carousel-control">›</a>
+  				</div>
   			</div>
 	    </div>
-	    
 	</div> <!-- Main App -->
 </div> <!-- Main -->
       
@@ -179,6 +178,10 @@
 
    			</div>
    		</div>
+   		<h4>Current Projects Your Hosting</h4>
+			<div style="border:2px;">
+				<p>Your currently have no projects listed with us.</p>
+			</div>
    		<div id="changeProfilePhotoModal" class="modal hide fade in" style="display:none;">
    			<div class="modal-header">
 			    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
@@ -281,21 +284,36 @@
 						    <div id="collapseOne" class="accordion-body collapse in">
 						    	<div class="accordion-inner">
 							        <form class="form-horizontal" id="textForm">
-							        	<div class="form-group" style="padding:10px 0px 10px 0px">
-								          	<div class="error" style="display:none"></div>
-								          	<input class="input-block-level" type="text" id="newitem-title" placeholder="Title" /><br>
-							        	</div>
-							          	<div class="form-group" style="padding:10px 0px 10px 0px">
-								          	<input class="input-block-level" type="text" id="newitem-shortDescription" placeholder="Short Description"/>
-								          	
+							        	<div class="ui-grid-a">
+   										<div class="ui-block-a">
+								        	<div class="form-group" style="padding:10px 0px 10px 0px">
+									          	<div class="error" style="display:none"></div>
+									          	<label for="newitem-title">Project Title: </label>
+									          	<input class="input-block-level" type="text" id="newitem-title" placeholder="Title" style="width:90%;"/>
+								        	</div>
+								          	<div class="form-group" style="padding:10px 0px 10px 0px">
+								          		<label for="newitem-shortDescription">Short 1-3 Sentence Description: </label>
+									          	<textarea class="input-block-level"  id="newitem-shortDescription" placeholder="Short Description" style="width:90%;"/>
+									          	
+								          	</div>
+								          	<div class="form-group" style="padding:10px 0px 10px 0px">
+								          		<label for="newitem-sponsor">Project Sponsors: </label>
+								          		<input class="input-block-level" type="text" id="newitem-sponsor" placeholder="Sponsors?" style="width:90%;"/>
+								          	</div> 
 							          	</div>
-							          	<div class="form-group" style="padding:10px 0px 10px 0px">
-							          		<textarea class="input-block-level" id="newitem-description" rows="16">Fill in this area with a detailed description of the project.</textarea><br>
+							          	<div class="ui-block-b">
+							          		<div class="form-group" style="padding:10px 0px 10px 0px">
+								          		<label for="newitem-endDate">Project End Date: </label>
+									          	<input type="text" id="newitem-endDate"/>
+								          	</div>
+								          	<div class="form-group" style="padding:10px 0px 10px 0px">
+								          		<label for="projectCityLocation">Project Location: </label>
+									          	<select id="projectCityLocation"><option value="" disabled="disabled" selected="selected">Select a City</option><option value="San Diego">San Diego</option><option value="San Francisco">San Francisco</option></select>
+								          	</div>
 							          	</div>
-							          	<div class="form-group" style="padding:10px 0px 10px 0px">
-							          		<input class="input-block-level" type="text" id="newitem-sponsor" placeholder="Sponsors?" />
-							          	</div> 
-							         	<button class="btn btn-default" id="textFormSubmit">Submit</button><br>
+							          	</div>
+
+							         	<button class="btn btn-default" id="textFormSubmit">Submit</button>
 							         </form>
 							         <div id="postAlert"></div>
 						    	</div>
@@ -310,12 +328,33 @@
 									
 										Upload Project Photo: <input type='file' id='projectPhotoFileUpload'>
 										<p class="help-block">Example block-level help text here.</p>
-										<button class="btn btn-default" id="profilePhotoUploadButton">Submit</button>
+										<button class="btn btn-default" id="projectPhotoUploadButton">Submit</button>
 									</form>
 					      		</div>
 					    	</div>
 					  	</div>
 					</div>
+		<div class="ui-grid-a">
+			<div class="ui-block-a">
+				<header>Click the photo to upload a new project main photo.</header>
+		  	   <img id='renderedProfilePhoto' src='surf.jpg' alt="" class="img-responsive" width="90%">
+		  	</div>
+		  	<div class="ui-block-b">
+		  		
+		  		<h2 id="renderedTitle">Title Your Project</h2>
+		  		<h3 id+"renderedLocation">What city will this project be in.</h3>
+			   	<h4 id="renderedShortDesc">Add a one sentence description for your project.</h4>
+			   	<div contenteditable="true">
+			   	<p>This is the main body of your project. Add text and photos.</p>
+			   	</div>
+		  		<div class="progress">
+					<div class="bar" style="width: 0%;">
+					    <span class="sr-only" style="color:black;">0% Funded</span>
+					  </div>
+				</div>
+				<button class="btn btn-default">Donate</button>
+		  	</div>
+		</div>
 	</script>
 
 	<script type="text/template" id="item-detail-view">
@@ -349,8 +388,8 @@
 <script src="js/bootstrap.min.js"></script>
 <script src="js/parse.min.js"></script>
 <script src="js/app.js"></script>
-<script src="http://js.nicedit.com/nicEdit-latest.js" type="text/javascript"></script>
-<script type="text/javascript">bkLib.onDomLoaded(nicEditors.allTextAreas);</script>
+<script src="ckeditor/ckeditor.js"></script>
+<script src="ckeditor/adapters/jquery.js"></script>
 
 
 
@@ -362,8 +401,8 @@
 		    	</a>
 		      	<div class="caption">
 		        	<h3 style="width:90%;text-align:center"><%= title %></h3>
-		        	<h4 style="width:90%;text-align:center"><%= shortDescription %></h4>
-					<p style="width:190px"><%= description %></p>
+		        	<h4 style="width:90%;"><%= shortDescription %></h4>
+					<p style="width:90%px"><%= description %></p>
 					<div class="progress">
 					<div class="bar" style="width: <%= percentFunded %>%;">
 					    <span class="sr-only"><%= percentFunded %>% Funded</span>

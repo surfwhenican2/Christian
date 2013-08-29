@@ -210,6 +210,7 @@ $(document).ready(function() {
 		  	var parseFile = new Parse.File(name, file);
 		  	parseFile.save().then(function() {
 			  	alert("Profile photo saved successfully. Now setting it for the user.");
+			  	$('#changeProfilePhotoModal').modal('hide');
 			  	var user = Parse.User.current();
 				user.set("profilePhoto", parseFile);
 				user.set("profilePhotoUrl", parseFile.url());
@@ -246,8 +247,7 @@ var Item = Parse.Object.extend("Item", {
 		description: "NULL",
 		sponsor: "NULL",
 		shortDescription: "NULL",
-		imageUrl: "img.jpg",
-		location: "NULL",
+		imgUrl: "img.jpg",
 		city: "NULL",
 		open: false
 	 }, 
@@ -256,8 +256,7 @@ var Item = Parse.Object.extend("Item", {
 		if(!this.get("description")) this.set({"description": this.defaults.description});
 		if(!this.get("sponsor")) this.set({"sponsor": this.defaults.sponsor});
 		if(!this.get("shortDescription")) this.set({"shortDescription": this.defaults.shortDescription});
-		if(!this.get("imageUrl")) this.set({"imageUrl": this.defaults.imageUrl});
-		if(!this.get("location")) this.set({"location": this.defaults.location});
+		if(!this.get("imgUrl")) this.set({"imgUrl": this.defaults.imageUrl});
 		if(!this.get("open")) this.set({"open": this.defaults.sponsor});
 	}
 });
@@ -354,48 +353,59 @@ var Item = Parse.Object.extend("Item", {
 		  this.render();
 	  },
 	  render: function() {
-		  this.delegateEvents();
+		  $('#newitemdescription').ckeditor();
+		  $('#newitem-endDate').datepicker();
 		  return this;
 	  },
 	  submitText: function() {
 		  var title1 = this.$("#newitem-title").val();
-		  var description1 = this.$("#newitem-description").val();
 		  var sponsor1 = this.$("#newitem-sponsor").val();
 		  var shortdesc1 = this.$("#newitem-shortDescription").val();
-		  var access = new Parse.ACL();
+		  var projectCityLocation = this.$("#projectCityLocation").val();
+		  var endProjectDate = new Date();
+		  endProjectDate = $('#newitem-endDate').datepicker('getDate');
+		  var access = new Parse.ACL(Parse.User.current());
 		  access.setPublicReadAccess(true);
-		  access.setPublicWriteAccess(false);
-		  access.setWriteAccess(Parse.User.current(), true);
+		  var fullname = Parse.User.current().get("fullName");
 		  var Item = Parse.Object.extend("Item");
 		  var item = new Item();
 		  item.save({
 			title: title1,
-			description: description1,
+			description: "test",
 			shortDescription: shortdesc1,
 			sponsor: sponsor1,
 			imgUrl: "img.jpg",
 			open: true,
-			user: Parse.User.current(),
+			endDate: endProjectDate,
+			percentFunded: 0,
+			city: projectCityLocation,
+			host: fullname, 
 			ACL: access }, {
 				success: function(item) {
-					console.log("Success saving " + item.id);
-					$('#postAlert').append('<div class="alert alert-success"><button type="button" class="close" data-dismiss="alert">x</button>Your service project was created successfully. You can view it by navigating to your profile.</div>');
+					alert("Success saving " + item.id);
+					$('#postAlert').append('<div class="alert alert-success"><button type="button" class="close" data-dismiss="alert" onclick="$("#collapseOne").collapse("hide");">x</button>Your service project was created successfully. You can view it by navigating to your profile.</div>');
+					$('#collapseTwo').collapse('show');
+					$('#renderedTitle').html(title1);
+					$('#renderedShortDesc').html(shortdesc1);
+					$('#renderedLocation').html(projectCityLocation);
 				},
 				error: function (item, error){
 					console.log(item);
 					console.log(error);
+					alert("error saving.");
 				}
 				  
 		  });  
 	  },
 	  submitMedia: function (){
-	  	var fileUploadControl = $("#profilePhotoFileUpload")[0];
+	  	var fileUploadControl = $("#projectPhotoFileUpload")[0];
 		if (fileUploadControl.files.length > 0) {
 		  	var file = fileUploadControl.files[0];
 		  	var name = "photo.jpg";
 		  	var parseFile = new Parse.File(name, file);
 		  	parseFile.save().then(function() {
-			  	console.log("photo saved to cloud.");
+			  	alert("photo saved to cloud.");
+			  	$('#renderedProfilePhoto').attr("src", parseFile.url());
 			}, function(error) {
 			  	console.log("Error: "+error.message);
 			});
@@ -445,7 +455,7 @@ var Item = Parse.Object.extend("Item", {
 
   var LocalItems = Parse.View.extend({
 
-  	el: $('#localCarouselDiv'),
+  	el: $('.localSection'),
 
   	events:  {
   		'click #changeCity':'changeCity'
@@ -459,11 +469,9 @@ var Item = Parse.Object.extend("Item", {
 		 this.items.query = new Parse.Query(Item);
 		 this.items.query.equalTo("open", true);
 		 var city = $('#currentCityCarouselCity').text();
-		 console.log('city: '+city);
 		 this.items.query.equalTo("city", city);
 		 this.items.fetch({
 			 success: function(collection){
-
 			 	self.render();
 			 },
 			 error: function(error) {
@@ -473,11 +481,15 @@ var Item = Parse.Object.extend("Item", {
   	},
   	render: function(){
   		this.delegateEvents();
-  		console.log(this.items);
   		var size = this.items.length;
   		var i = 1;
   		var j = 1;
   		$('#localCarouselInner').append('<div class="item active"><div class="ui-grid-b" id="item'+(j-1)+'">');
+  		if (size == 0) {
+  			$('#localCarouselInner').html('<div class="item active"><h4>There are no projects in this city currently.</h4></div>');
+  			return this;
+  		}
+
   		for (i; i <= size; i++)
 		{
 			if ((i-1) % 3 == 0 ) {
@@ -570,15 +582,12 @@ var ChangePasswordView = Parse.View.extend({
         success: function(user) {
           console.log(user);
           alert("Your password has been successfully changed. You may now log in with your new password.");
-          
         },
         error: function(error){
           console.log(error);
         }
       });
-
       this.$(".change-password-form button").attr("disabled", "disabled");
-      
       return false;
     },
     render: function() {
